@@ -1,0 +1,74 @@
+import datetime
+from hashlib import blake2b
+import csv
+
+def create_random_sample_csv(filename):
+    ts = datetime.datetime.now()
+    batch_id = blake2b(str(ts).encode('utf-8'), digest_size=6).hexdigest()
+
+    fieldnames = [
+        'name',
+        'description',
+        'project',
+        'Barcode ID'
+    ]
+    rows = []
+
+    for i in range(1, 97):
+        row = {
+            'name': '{} #{:03d}'.format(batch_id, i),
+            'description': 'Specimen ingested at {} from batch {}'.format(ts, batch_id),
+            'project': 'Test',
+            'Barcode ID': blake2b((batch_id + str(i)).encode('utf-8'), digest_size=6).hexdigest()
+        }
+        rows.append(row)
+
+    with open(filename, 'w', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows: writer.writerow(row)
+
+def load_samples_from_csv(filename, session, st_name):
+    with open(filename) as csvfile:
+        sample_data = csv.DictReader(csvfile)
+        return load_samples(sample_data, session, st_name)
+
+def load_samples(sample_data, session, st_name):
+    sample_type_id = session.SampleType.find_by_name(st_name).id
+    new_samples = []
+    for s in sample_data:
+        s["sample_type_id"] = sample_type_id
+
+        attr = {}
+        for a in ["name", "sample_type_id", "description", "project"]:
+          attr[a] = s.pop(a)
+
+        attr['properties'] = s
+
+        new_sample = session.Sample.new(**attr)
+        new_sample.save()
+        new_samples.append(new_sample)
+
+    print("Loaded {} Samples:".format(len(new_samples)))
+    for s in new_samples:
+        print(s.name)
+
+    return new_samples
+
+def create_items(samples, session, ot_name, location):
+    ot = session.ObjectType.find_by_name(ot_name)
+    new_items = []
+    for sample in samples:
+        new_item = session.Item.new(
+            sample_id=sample.id,
+            object_type_id=ot.id
+        )
+        new_item.save()
+        new_item.move(location)
+        new_items.append(new_item)
+
+    print("Created {} Items:".format(len(new_items)))
+    for i in new_items:
+        print("{}: {} in {}".format(i.id, i.sample.name, i.object_type.name))
+
+    return new_items
