@@ -3,3 +3,5 @@ __pycache__/
 */secrets.json
 *.DS_Store
 */git_setup.sh
+loaded_specimens/*
+specimens_to_load/*

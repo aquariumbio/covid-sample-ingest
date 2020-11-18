@@ -1,7 +1,7 @@
 import csv
 
-def load_samples_from_csv(filename, session, st_name):
-    with open(filename) as csvfile:
+def load_samples_from_csv(file_path, session, st_name):
+    with open(file_path) as csvfile:
         sample_data = csv.DictReader(csvfile)
         return load_samples(sample_data, session, st_name)
 
@@ -15,13 +15,13 @@ def load_samples(sample_data, session, st_name):
         for a in ["name", "sample_type_id", "description", "project"]:
           attr[a] = s.pop(a)
 
-        attr['properties'] = s
+        attr["properties"] = s
 
         new_sample = session.Sample.new(**attr)
         new_sample.save()
         new_samples.append(new_sample)
 
-    print("Loaded {} Samples:".format(len(new_samples)))
+    print("\nLoaded {} Samples:".format(len(new_samples)))
     for s in new_samples:
         print(s.name)
 
