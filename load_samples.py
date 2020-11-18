@@ -1,6 +1,12 @@
 import os
 import glob
 import argparse
+from itertools import zip_longest
+
+import pydent
+from pydent import models
+from pydent.models import Sample, Item, Plan
+from pydent.exceptions import AquariumModelError
 
 from util.pydent_helper import create_session
 from util.sample_loader import load_samples_from_csv, create_items
@@ -8,15 +14,40 @@ from util.sample_loader import load_samples_from_csv, create_items
 def main():
     args = get_args()
     session = create_session(args.server)
-    samples = []
+    # samples = load_all_in_path(session, args.path, args.archive_path)
+    # items = create_items(samples, session, "Nasopharyngeal Swab", "Ingest")
+    items = session.Item.last(3*96)
+    grouped_items = grouper(96, reversed(items), fillvalue=None)
 
-    for file_path in glob.glob(os.path.join(args.path, "*.csv")):
-        new_samples = load_samples_from_csv(file_path, session, "Specimen")
-        samples.extend(new_samples)
-        filename = os.path.basename(file_path)
-        os.rename(file_path, os.path.join(args.archive_path, filename))
+    plan = Plan(name='Test Plan')
+    plan.connect_to_session(session)
+    plan.create()
 
-    create_items(samples, session, "Nasopharyngeal Swab", "Ingest")
+    operations = []
+
+    for g, item_group in enumerate(grouped_items, start=1):
+        item_group = list(item_group)
+        operation = initialize_op(session, 'Pool Samples', 1024, 64*g)
+
+        # Can revive this if we need to set Options
+        #
+        # try:
+        #     operation.set_input("Options", value={})
+        # except AquariumModelError as err:
+        #     print("FieldValue error: {0}".format(err))
+
+        object_type = session.ObjectType.find_by_name("Nasopharyngeal Swab")
+        all_values = [values(item, object_type) for item in item_group]
+
+        try:
+            operation.set_input_array("Specimen", all_values)
+        except AquariumModelError as err:
+            print("FieldValue error: {0}".format(err))
+
+        operations.append(operation)
+
+    plan.add_operations(operations)
+    plan.save()
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -29,6 +60,34 @@ def get_args():
     parser.add_argument("-s", "--server",
                         help="the key pointing to the server instance in secrets.json")
     return parser.parse_args()
+
+def load_all_in_path(session, path, archive_path):
+    samples = []
+    for file_path in glob.glob(os.path.join(path, "*.csv")):
+        new_samples = load_samples_from_csv(file_path, session, "Specimen")
+        samples.extend(new_samples)
+        filename = os.path.basename(file_path)
+        os.rename(file_path, os.path.join(archive_path, filename))
+    return samples
+
+def grouper(n, iterable, fillvalue=None):
+    "grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx"
+    args = [iter(iterable)] * n
+    return zip_longest(*args, fillvalue=fillvalue)
+
+def initialize_op(session, name, x, y):
+    op_type = session.OperationType.find_by_name(name)
+    op = op_type.instance()
+    op.x = x
+    op.y = y
+    return op
+
+def values(item, object_type):
+    return {
+        "sample": item.sample,
+        "container": object_type,
+        "item": item
+    }
 
 if __name__ == "__main__":
     main()
