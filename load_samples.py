@@ -10,13 +10,14 @@ from pydent.exceptions import AquariumModelError
 
 from util.pydent_helper import create_session
 from util.sample_loader import load_samples_from_csv, create_items
+from util.random_samples import random_name
 
 def main():
     args = get_args()
     session = create_session(args.server)
     # samples = load_all_in_path(session, args.path, args.archive_path)
     # items = create_items(samples, session, "Nasopharyngeal Swab", "Ingest")
-    items = session.Item.last(3*96)
+    items = sorted(session.Item.last(3*96), key=lambda x: x.sample_id)
     grouped_items = grouper(96, reversed(items), fillvalue=None)
 
     plan = Plan(name='Test Plan')
@@ -41,6 +42,20 @@ def main():
 
         try:
             operation.set_input_array("Specimen", all_values)
+        except AquariumModelError as err:
+            print("FieldValue error: {0}".format(err))
+
+        output_sample = session.Sample.new(
+            name=random_name(),
+            description="",
+            project="Test",
+            sample_type=session.SampleType.find_by_name("Pooled Specimens"),
+            properties={"Test": "foo"}
+        )
+        output_sample.save()
+
+        try:
+            operation.set_output("Pooled Sample Plate", sample=output_sample)
         except AquariumModelError as err:
             print("FieldValue error: {0}".format(err))
 

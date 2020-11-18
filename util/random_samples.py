@@ -1,11 +1,14 @@
 import os
 import datetime
-from hashlib import blake2b
 import csv
+import random
+import string
+
+import namegenerator
 
 def create_random_sample_csv(n_samples=96, filename_stub="specimens.csv", path="specimens_to_load"):
     ts = datetime.datetime.now()
-    batch_id = blake2b(str(ts).encode("utf-8"), digest_size=6).hexdigest()
+    batch_id = random_string(16)
 
     fieldnames = [
         "name",
@@ -20,7 +23,7 @@ def create_random_sample_csv(n_samples=96, filename_stub="specimens.csv", path="
             "name": "{} #{:03d}".format(batch_id, i),
             "description": "Specimen ingested at {} from batch {}".format(ts, batch_id),
             "project": "Test",
-            "Barcode ID": blake2b((batch_id + str(i)).encode("utf-8"), digest_size=6).hexdigest()
+            "Barcode ID": random_string(16)
         }
         rows.append(row)
 
@@ -30,3 +33,10 @@ def create_random_sample_csv(n_samples=96, filename_stub="specimens.csv", path="
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for row in rows: writer.writerow(row)
+
+def random_string(length):
+    alphanum = string.ascii_lowercase + string.digits
+    return ''.join(random.choice(alphanum) for i in range(length))
+
+def random_name():
+    return namegenerator.gen()
