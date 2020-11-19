@@ -15,20 +15,21 @@ from util.random_samples import random_name
 def main():
     args = get_args()
     session = create_session(args.server)
-    # samples = load_all_in_path(session, args.path, args.archive_path)
-    # items = create_items(samples, session, "Nasopharyngeal Swab", "Ingest")
-    items = sorted(session.Item.last(3*96), key=lambda x: x.sample_id)
-    grouped_items = grouper(96, reversed(items), fillvalue=None)
+    samples = load_all_in_path(session, args.path, args.archive_path)
+    items = create_items(samples, session, "Nasopharyngeal Swab", "Ingest")
+    # items = sorted(session.Item.last(3*96), key=lambda x: x.sample_id)
+    grouped_items = grouper(96, items, fillvalue=None)
 
     plan = Plan(name='Test Plan')
     plan.connect_to_session(session)
     plan.create()
 
     operations = []
+    output_sample = make_output_sample(session)
 
     for g, item_group in enumerate(grouped_items, start=1):
-        item_group = list(item_group)
-        operation = initialize_op(session, 'Pool Samples', 1024, 64*g)
+        item_group = list(filter(None, item_group))
+        operation = initialize_op(session, 'Pool Samples', 1024, 128*g)
 
         # Can revive this if we need to set Options
         #
@@ -42,19 +43,6 @@ def main():
 
         try:
             operation.set_input_array("Specimen", all_values)
-        except AquariumModelError as err:
-            print("FieldValue error: {0}".format(err))
-
-        output_sample = session.Sample.new(
-            name=random_name(),
-            description="",
-            project="Test",
-            sample_type=session.SampleType.find_by_name("Pooled Specimens"),
-            properties={"Test": "foo"}
-        )
-        output_sample.save()
-
-        try:
             operation.set_output("Pooled Sample Plate", sample=output_sample)
         except AquariumModelError as err:
             print("FieldValue error: {0}".format(err))
@@ -103,6 +91,17 @@ def values(item, object_type):
         "container": object_type,
         "item": item
     }
+
+def make_output_sample(session):
+    output_sample = session.Sample.new(
+        name=random_name(),
+        description="",
+        project="Test",
+        sample_type=session.SampleType.find_by_name("Pooled Specimens"),
+        properties={"Test": "foo"}
+    )
+    output_sample.save()
+    return output_sample
 
 if __name__ == "__main__":
     main()
