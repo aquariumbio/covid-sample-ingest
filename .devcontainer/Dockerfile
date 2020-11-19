@@ -39,7 +39,8 @@ RUN apt-get update \
     #
     # Added by Devin Strickland, University of Washinton
     # Install pydent
-    && pip3 install pydent --upgrade
+    && pip3 install pydent --upgrade \
+    && pip3 install namegenerator
 
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=
