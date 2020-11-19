@@ -21,9 +21,7 @@ def load_samples(sample_data, session, st_name):
         new_sample.save()
         new_samples.append(new_sample)
 
-    print("\nLoaded {} Samples:".format(len(new_samples)))
-    for s in new_samples:
-        print(s.name)
+    print("Loaded {} Samples".format(len(new_samples)))
 
     return new_samples
 
@@ -39,8 +37,6 @@ def create_items(samples, session, ot_name, location):
         new_item.move(location)
         new_items.append(new_item)
 
-    print("Created {} Items:".format(len(new_items)))
-    for i in new_items:
-        print("{}: {} in {}".format(i.id, i.sample.name, i.object_type.name))
+    print("Created {} Items".format(len(new_items)))
 
     return new_items
