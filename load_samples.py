@@ -1,9 +1,6 @@
 import argparse
-from itertools import zip_longest
 
 import pydent
-from pydent import models
-from pydent.models import Sample, Item, Plan
 from pydent.exceptions import AquariumModelError
 
 from util.pydent_helper import create_session
@@ -22,7 +19,7 @@ def main():
     g = 0
     for filename, new_samples in new_samples_by_filename.items():
         g += 1
-        operation = initialize_op(session, 'Pool Samples', 1024, 128*g)
+        operation = make_operation(session, 'Pool Samples', 1024, 128*g)
         operation.associate("specimens_from_file", filename)
 
         # Can revive this if we need to set Options
@@ -55,7 +52,7 @@ def get_args():
                         help="the key pointing to the server instance in secrets.json")
     return parser.parse_args()
 
-def initialize_op(session, name, x, y):
+def make_operation(session, name, x, y):
     op_type = session.OperationType.find_by_name(name)
     op = op_type.instance()
     op.x = x
