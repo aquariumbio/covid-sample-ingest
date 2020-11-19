@@ -20,12 +20,9 @@ def main():
     # items = sorted(session.Item.last(3*96), key=lambda x: x.sample_id)
     grouped_items = grouper(96, items, fillvalue=None)
 
-    plan = Plan(name='Test Plan')
-    plan.connect_to_session(session)
-    plan.create()
-
-    operations = []
+    plan = make_plan(session, "Test Plan")
     output_sample = make_output_sample(session)
+    operations = []
 
     for g, item_group in enumerate(grouped_items, start=1):
         item_group = list(filter(None, item_group))
@@ -102,6 +99,11 @@ def make_output_sample(session):
     )
     output_sample.save()
     return output_sample
+
+def make_plan(session, name):
+    plan = session.Plan.new(name=name)
+    plan.create()
+    return plan
 
 if __name__ == "__main__":
     main()
