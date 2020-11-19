@@ -1,42 +1,53 @@
+import os
 import csv
+import glob
 
-def load_samples_from_csv(file_path, session, st_name):
+def load_all_in_path(session, path, archive_path):
+    new_samples_by_filename = {}
+    for file_path in glob.glob(os.path.join(path, "*.csv")):
+        new_samples = load_from_csv(file_path, session, "Specimen", "Nasopharyngeal Swab", "Ingest")
+        filename = os.path.basename(file_path)
+        new_samples_by_filename[filename] = new_samples
+        os.rename(file_path, os.path.join(archive_path, filename))
+    return new_samples_by_filename
+
+def load_from_csv(file_path, session, st_name, ot_name, location):
     with open(file_path) as csvfile:
         sample_data = csv.DictReader(csvfile)
-        return load_samples(sample_data, session, st_name)
+        return load_samples_and_items(sample_data, session, st_name, ot_name, location)
 
-def load_samples(sample_data, session, st_name):
-    sample_type_id = session.SampleType.find_by_name(st_name).id
+def load_samples_and_items(sample_data, session, st_name, ot_name, location):
+    sample_type = session.SampleType.find_by_name(st_name)
+    object_type = session.ObjectType.find_by_name(ot_name)
     new_samples = []
+
     for s in sample_data:
-        s["sample_type_id"] = sample_type_id
+        s["sample_type"] = sample_type
 
         attr = {}
-        for a in ["name", "sample_type_id", "description", "project"]:
+        for a in ["name", "sample_type", "description", "project"]:
           attr[a] = s.pop(a)
 
         attr["properties"] = s
 
         new_sample = session.Sample.new(**attr)
         new_sample.save()
-        new_samples.append(new_sample)
 
-    print("Loaded {} Samples".format(len(new_samples)))
-
-    return new_samples
-
-def create_items(samples, session, ot_name, location):
-    ot = session.ObjectType.find_by_name(ot_name)
-    new_items = []
-    for sample in samples:
         new_item = session.Item.new(
-            sample_id=sample.id,
-            object_type_id=ot.id
+            sample=new_sample,
+            object_type=object_type
         )
         new_item.save()
         new_item.move(location)
-        new_items.append(new_item)
+        new_samples.append(values(new_sample, new_item, object_type))
 
-    print("Created {} Items".format(len(new_items)))
+    print("Loaded {} Samples with Items".format(len(new_samples)))
 
-    return new_items
+    return new_samples
+
+def values(sample, item, object_type):
+    return {
+        "sample": item.sample,
+        "container": object_type,
+        "item": item
+    }
