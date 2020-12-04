@@ -51,4 +51,5 @@ where `2 3 4` are the numbers of samples in each batch. You have to pass at leas
 but you can pass more if you like.
 
 In the above example, the scripts will generate 3 .csv files with 2, 3, and 4 random samples,
-respectively, load them, and plan a poolling operation for the samples in each file.
+respectively, load them, and plan a poolling operation for the samples in each file. The script
+will also submit the plan undier the default user and budget: "Joe Neptune" and "My First Budget."

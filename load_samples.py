@@ -40,6 +40,10 @@ def main():
     plan.add_operations(operations)
     plan.save()
 
+    user = session.User.find_by_name("Joe Neptune")
+    budget = session.Budget.find_by_name("My First Budget")
+    plan.submit(user, budget)
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--path",
