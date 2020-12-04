@@ -43,4 +43,4 @@ In order to add credentials for your Aquarium instance(s), `cp util/secrets_temp
 ```
 
 ## Usage
-In progress...
+`sh test_load.sh`
