@@ -11,7 +11,7 @@ This library is designed to be run in a Visual Studio Code [dev container](https
 * Install [Docker](https://www.docker.com/get-started)
 * Install [Visual Studio Code](https://code.visualstudio.com/)
 
-Running in this environment eliminates the need to install Trident or manage your Python version. 
+Running in this environment eliminates the need to install Trident or manage your Python version.
 
 ## Setup
 ### 1. Clone
@@ -22,7 +22,7 @@ git clone git@github.com:aquariumbio/covid-sample-ingest.git
 ```
 
 ### 2. Open in VS Code dev container
-From a new VS Code window, open the `covid-sample-ingest` folder. You should see a dialog at the bottom right corner of the window that says **Folder contains a dev container configuration file. Reopen folder to develop in a container (learn more).** Select **Reopen in Container**. You can also click the green rectangle at the lower left corner and select **Remote-Containers: Reopen Folder in Container** from the menu that appears at the top of the window. 
+From a new VS Code window, open the `covid-sample-ingest` folder. You should see a dialog at the bottom right corner of the window that says **Folder contains a dev container configuration file. Reopen folder to develop in a container (learn more).** Select **Reopen in Container**. You can also click the green rectangle at the lower left corner and select **Remote-Containers: Reopen Folder in Container** from the menu that appears at the top of the window.
 
 ### 3. Add credentials
 In order to add credentials for your Aquarium instance(s), `cp util/secrets_template.json util/secrets.json`, and add your login and url information to the new file. You can have more than two instances, and the keys (e.g., `laptop` and `production`) can be changed to whatever you want them to be.
@@ -43,4 +43,12 @@ In order to add credentials for your Aquarium instance(s), `cp util/secrets_temp
 ```
 
 ## Usage
-`sh test_load.sh`
+You can load batches of samples and plan pooling operations for them by running
+```bash
+sh test_load.sh 2 3 4
+```
+where `2 3 4` are the numbers of samples in each batch. You have to pass at least one number,
+but you can pass more if you like.
+
+In the above example, the scripts will generate 3 .csv files with 2, 3, and 4 random samples,
+respectively, load them, and plan a poolling operation for the samples in each file.
