@@ -1,4 +1,5 @@
-python make_random_samples.py -n 16
-python make_random_samples.py -n 5
-python make_random_samples.py -n 9
+for var in "$@"
+do
+    python make_random_samples.py -n "$var"
+done
 python load_samples.py -s laptop
