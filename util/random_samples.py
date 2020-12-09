@@ -3,31 +3,37 @@ import datetime
 import csv
 import random
 import string
+import math
 
 import namegenerator
 
 def create_random_sample_csv(n_samples=96, filename_stub="specimens.csv", path="specimens_to_load"):
     ts = datetime.datetime.now()
-    batch_id = random_string(16)
+    rack_barcode = random_string(16)
 
     fieldnames = [
         "name",
         "description",
         "project",
-        "Barcode ID"
+        "Specimen Barcode",
+        "Rack Barcode",
+        "Rack Location"
     ]
     rows = []
 
-    for i in range(1, n_samples + 1):
+    for i in range(n_samples):
+        rack_location = alphanum(i)
         row = {
-            "name": "{} #{:03d}".format(batch_id, i),
-            "description": "Specimen ingested at {} from batch {}".format(ts, batch_id),
+            "name": "{}_{}".format(rack_barcode, rack_location),
+            "description": "Specimen ingested at {} from rack {}".format(ts, rack_barcode),
             "project": "Test",
-            "Barcode ID": random_string(16)
+            "Specimen Barcode": random_string(16),
+            "Rack Barcode": rack_barcode,
+            "Rack Location": rack_location
         }
         rows.append(row)
 
-    filename = "{}_{}".format(batch_id, filename_stub)
+    filename = "{}_{}".format(rack_barcode, filename_stub)
     file_path = os.path.join(path, filename)
     with open(file_path, "w") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -40,3 +46,7 @@ def random_string(length):
 
 def random_name():
     return namegenerator.gen()
+
+def alphanum(ind):
+    alpha = "ABCDEFGH"
+    return alpha[math.floor((ind) / 12)] + str((ind % 12) + 1)
