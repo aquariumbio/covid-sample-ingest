@@ -16,8 +16,8 @@ def create_random_sample_csv(n_samples=96, filename_stub="specimens.csv", path="
         "description",
         "project",
         "Specimen Barcode",
-        "Rack Barcode",
-        "Rack Location"
+        "Ingest Rack Barcode",
+        "Ingest Rack Location"
     ]
     rows = []
 
@@ -28,8 +28,8 @@ def create_random_sample_csv(n_samples=96, filename_stub="specimens.csv", path="
             "description": "Specimen ingested at {} from rack {}".format(ts, rack_barcode),
             "project": "Test",
             "Specimen Barcode": random_string(16),
-            "Rack Barcode": rack_barcode,
-            "Rack Location": rack_location
+            "Ingest Rack Barcode": rack_barcode,
+            "Ingest Rack Location": rack_location
         }
         rows.append(row)
 
