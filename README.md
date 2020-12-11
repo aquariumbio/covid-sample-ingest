@@ -43,13 +43,8 @@ In order to add credentials for your Aquarium instance(s), `cp util/secrets_temp
 ```
 
 ## Usage
-You can load batches of samples and plan pooling operations for them by running
+Testing: you can create random files for racks of samples and plan pooling operations for them by running
 ```bash
-sh test_load.sh 2 3 4
+python test_load.py
 ```
-where `2 3 4` are the numbers of samples in each batch. You have to pass at least one number,
-but you can pass more if you like.
-
-In the above example, the scripts will generate 3 .csv files with 2, 3, and 4 random samples,
-respectively, load them, and plan a poolling operation for the samples in each file. The script
-will also submit the plan undier the default user and budget: "Joe Neptune" and "My First Budget."
+this will generate 4 .csv files, each with 3 random samples, load them, and plan a poolling operation for thm. The script will also submit the plan undier the default user and budget: "Joe Neptune" and "My First Budget."
